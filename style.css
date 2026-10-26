@@ -108,3 +108,25 @@
 .drawer-items .drawer-app .prime-icon{background:#132f46}
 .drawer-items .drawer-app .name{font-size:12px;white-space:nowrap}
 @media(max-height:440px){#dock{height:17%;padding:3px 5px;border-radius:13px}#dock .app .symbol.app-icon{width:clamp(21px,4.1vh,33px);height:clamp(21px,4.1vh,33px)}#dock .app .name{font-size:clamp(7px,1.7vh,10px)}#dock .app{gap:1px}}
+
+/* v0.2.2 tvOS-inspired landscape navigation cards */
+#dock { height:17%; bottom:2.6%; gap:.45%; padding:5px 7px; border-radius:15px; }
+#dock .app { border-radius:10px; gap:3px; background:rgba(3,16,27,.14); }
+#dock .app.selected, #dock .app:focus-visible {
+ transform:translateY(-3px) scale(1.035);
+ background:rgba(68,114,140,.29);
+ border-color:rgba(236,249,255,.9);
+ box-shadow:0 9px 28px #0009,0 0 13px rgba(125,203,238,.25);
+}
+#dock .app .symbol.app-icon { border-radius:15%; box-shadow:0 5px 15px #0007,inset 0 1px #ffffff29; }
+#dock .app .name {font-weight:550;letter-spacing:.01em}
+#eyes .eye { opacity:0!important; background:transparent!important; box-shadow:none!important; transition:opacity .3s ease-in-out!important; }
+#eyes .eye.active {
+ opacity:var(--pulse-strength,.55)!important;
+ background:radial-gradient(ellipse at 50% 48%,rgba(var(--pulse-color,47,159,245),.51) 0%,rgba(var(--pulse-color,47,159,245),.31) 52%,transparent 88%)!important;
+ box-shadow:0 0 5px 1px rgba(var(--pulse-color,47,159,245),.17)!important;
+ filter:blur(1.1px)!important;
+}
+#eyes .eye.active::before{opacity:0!important}
+#eyes.calibrating .eye.calibrate{opacity:.84!important;background:rgba(4,145,230,.35)!important;filter:none!important}
+@media(max-height:440px){#dock{height:18%;padding:2px 4px}}

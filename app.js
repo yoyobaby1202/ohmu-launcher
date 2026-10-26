@@ -25,7 +25,7 @@ function renderIcon(id,label,fallback){
  return `<span class="symbol app-icon ${id}-icon" aria-hidden="true">${artwork}</span><span class="name">${label}</span>`;
 }
 
-let selected=0,lastAction=Date.now(),immersive=false,calibrate=false,glow=95,fog=75,idle=60,toastTimer;
+let selected=0,lastAction=Date.now(),immersive=false,calibrate=false,glow=95,fog=85,idle=60,toastTimer;
 const eyeGeometry=[[74,58,-24],[77,61,24],[55,63,-26],[77,62,-23],[75,64,23],[59,65,28],[61,70,-27],[70,69,-21],[70,69,23],[62,70,27],[75,73,-22],[74,74,23]];
 const defaultSizes=eyeGeometry.map(([w,h])=>[w,h]);
 let eyeSizes;try{eyeSizes=JSON.parse(localStorage.getItem('ohmu-eye-sizes-v014')||localStorage.getItem('ohmu-eye-sizes-v015')||'null')}catch(_){eyeSizes=null}
@@ -107,9 +107,14 @@ function closePanel(){document.getElementById('panel').hidden=true;document.getE
 document.getElementById('settings').onclick=openPanel;document.getElementById('close').onclick=closePanel;document.getElementById('editBack').onclick=openPanel;
 const glowInput=document.getElementById('glow');glowInput.value=95;document.getElementById('glowOut').textContent='95%';
 glowInput.oninput=e=>{glow=+e.target.value;document.getElementById('glowOut').textContent=glow+'%'};
-const fogInput=document.getElementById('fog');fogInput.value=75;document.getElementById('fogOut').textContent='75%';
+const fogInput=document.getElementById('fog');fogInput.value=85;document.getElementById('fogOut').textContent='85%';
 fogInput.oninput=e=>{fog=+e.target.value;document.getElementById('fogOut').textContent=fog+'%'};
 document.getElementById('idle').onchange=e=>idle=+e.target.value;
+let rainEnabled=localStorage.getItem('ohmu-rain-v022')!=='off', atmospherePreviewUntil=0;
+const rainToggle=document.getElementById('rainToggle');rainToggle.checked=rainEnabled;
+rainToggle.onchange=e=>{rainEnabled=e.target.checked;localStorage.setItem('ohmu-rain-v022',rainEnabled?'on':'off')};
+document.getElementById('atmosphereTest').onclick=()=>{atmospherePreviewUntil=performance.now()+8000;notify('Fog + rain preview · 8 sec');closePanel()};
+
 document.getElementById('calibrate').onchange=e=>{calibrate=e.target.checked;eyesRoot.classList.toggle('calibrating',calibrate);eyeNodes.forEach(n=>n.classList.toggle('calibrate',calibrate));document.getElementById('eyeSizeControls').hidden=!calibrate;syncSizeUI();notify(calibrate?'Drag an eye to move; adjust its width and height':'Eye settings saved')};
 document.getElementById('reset').onclick=()=>{coords=defaults.map(p=>p.slice());eyeSizes=defaultSizes.map(a=>a.slice());localStorage.removeItem('ohmu-eyes-v013');localStorage.removeItem('ohmu-eyes-v015');localStorage.removeItem('ohmu-eye-sizes-v014');localStorage.removeItem('ohmu-eye-sizes-v015');place();syncSizeUI();notify('Eye positions and sizes reset')};
 let dragging=-1;eyeNodes.forEach((e,i)=>{e.addEventListener('pointerdown',ev=>{if(!calibrate)return;dragging=i;editingEye=i;syncSizeUI();e.setPointerCapture(ev.pointerId);ev.preventDefault()});e.addEventListener('pointermove',ev=>{if(dragging!==i)return;const r=eyesRoot.getBoundingClientRect();coords[i]=[Math.max(0,Math.min(100,(ev.clientX-r.left)/r.width*100)),Math.max(0,Math.min(100,(ev.clientY-r.top)/r.height*100))];place()});e.addEventListener('pointerup',()=>{dragging=-1;persistCoords()});e.addEventListener('pointercancel',()=>{dragging=-1})});
@@ -131,6 +136,28 @@ const beams=[
   {x:.69,w:.11,a:.13,speed:.00029,phase:3.1},
   {x:.84,w:.09,a:.10,speed:.00033,phase:4.4},
 ];
+
+const rainfall=Array.from({length:75},()=>({
+ x:Math.random()*W,y:Math.random()*H*.86,length:7+Math.random()*19,
+ speed:3+Math.random()*4,alpha:.12+Math.random()*.21,phase:Math.random()*6.28
+}));
+function drawRain(density,t){
+ if(!rainEnabled)return;
+ ctx.save();ctx.globalCompositeOperation='screen';ctx.lineWidth=1.25;
+ for(const r of rainfall){
+  r.y+=r.speed*(.75+density*.55);r.x-=r.speed*.16;
+  if(r.y>H*.86){r.y=-20;r.x=Math.random()*W}
+  if(r.x<-20)r.x=W+10;
+  // Faint rain inside the cave, brighter near side walls, avoiding Ohmu's face
+  const wall=Math.abs(r.x-W*.5)/(W*.5);
+  const strength=Math.min(1,wall*.9+.17);
+  const a=r.alpha*density*strength;
+  ctx.strokeStyle=`rgba(170,222,238,${a})`;
+  ctx.beginPath();ctx.moveTo(r.x,r.y);ctx.lineTo(r.x-3,r.y+r.length);ctx.stroke();
+ }
+ ctx.restore();
+}
+
 let last=0;
 function drawBeamLayer(t,density){ctx.save();ctx.globalCompositeOperation='screen';for(const b of beams){const twinkle=(0.7+0.3*Math.sin(t*b.speed+b.phase));const alpha=b.a*density*twinkle;const x=b.x*W;const w=b.w*W;const grad=ctx.createLinearGradient(x,0,x+w,H*.62);grad.addColorStop(0,`rgba(190,235,255,${alpha*.95})`);grad.addColorStop(.35,`rgba(125,205,255,${alpha*.45})`);grad.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=grad;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+w*.92,0);ctx.lineTo(x+w*.58,H*.56);ctx.lineTo(x+w*.16,H*.56);ctx.closePath();ctx.fill();}
 ctx.restore();}
@@ -142,10 +169,10 @@ function drawFog(t,density){
  ctx.save();ctx.globalCompositeOperation='screen';
  const time=t*.001;
  const clouds=[
-  {baseY:.66,rx:300,ry:58,alpha:.15,drift:11},
-  {baseY:.72,rx:350,ry:74,alpha:.19,drift:-9},
-  {baseY:.78,rx:325,ry:68,alpha:.20,drift:13},
-  {baseY:.83,rx:330,ry:70,alpha:.15,drift:-7}
+  {baseY:.65,rx:260,ry:76,alpha:.31,drift:19},
+  {baseY:.72,rx:310,ry:85,alpha:.36,drift:-17},
+  {baseY:.78,rx:325,ry:68,alpha:.38,drift:22},
+  {baseY:.83,rx:330,ry:70,alpha:.28,drift:-13}
  ];
  for(let layer=0;layer<clouds.length;layer++){
   const c=clouds[layer];
@@ -164,7 +191,7 @@ function drawFog(t,density){
  }
  ctx.restore();
 }
-function draw(t){if(t-last<32){requestAnimationFrame(draw);return}last=t;ctx.clearRect(0,0,W,H);const density=Math.max(.05,fog/100);drawBeamLayer(t,density*.95);drawSporeSet(farSpores,t,density*.95,7);drawFog(t,density);drawSporeSet(nearSpores,t,density,12);if(idle&&!immersive&&document.getElementById('panel').hidden&&Date.now()-lastAction>idle*1000){immersive=true;stage.classList.add('immersive')}requestAnimationFrame(draw)}
+function draw(t){if(t-last<32){requestAnimationFrame(draw);return}last=t;ctx.clearRect(0,0,W,H);const density=t<atmospherePreviewUntil?1:Math.max(0,fog/100);drawBeamLayer(t,density*.95);drawSporeSet(farSpores,t,density*.95,7);drawFog(t,density);drawRain(density,t);drawSporeSet(nearSpores,t,density,12);if(idle&&!immersive&&document.getElementById('panel').hidden&&Date.now()-lastAction>idle*1000){immersive=true;stage.classList.add('immersive')}requestAnimationFrame(draw)}
 choose(0,false);requestAnimationFrame(draw);stage.focus();
 })();
 
