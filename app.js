@@ -45,36 +45,48 @@ syncSizeUI();
 apps.forEach(([id,name,symbol],i)=>{const b=document.createElement('button');b.className='app';b.dataset.id=id;b.innerHTML=renderIcon(id,name,symbol);b.setAttribute('aria-label',name);b.addEventListener('click',()=>{wake();if(selected===i)activate();else choose(i)});dock.appendChild(b)});
 const buttons=[...dock.children];
 let appEffects=localStorage.getItem('ohmu-app-effects-v016')!=='off';
-// All twelve eyes illuminate together. Apps vary by color and temporal rhythm only.
-// Blue = calm; red = alert. No traveling dots or artificial white centers.
+// Redesigned biological eye glow: all eyes brighten together.
+// Each app changes only timing / energy profile and red-blue family.
 const effectSettings={
- youtube:{color:'blue',pattern:[[0,420,0.70]]},
- netflix:{color:'red',pattern:[[0,180,.72],[265,420,.86]]},
- disney:{color:'blue',pattern:[[0,850,.57]]},
- ytmusic:{color:'red',pattern:[[0,145,.64],[245,145,.64],[490,310,.70]]},
- cable:{color:'blue',pattern:[[0,250,.68],[360,490,.56]]},
- appletvbox:{color:'blue',pattern:[[0,970,.53]]},
- apps:{color:'blue',pattern:[[0,260,.60],[350,260,.64]]},
- settings:{color:'blue',pattern:[[0,160,.55]]},
- prime:{color:'blue',pattern:[[0,480,.68]]},
- spotify:{color:'blue',pattern:[[0,190,.60],[290,190,.60],[580,370,.54]]},
- appletvapp:{color:'blue',pattern:[[0,850,.55]]}
+ youtube:{family:'blue',pattern:[[0,430,.88,'focus']]},
+ netflix:{family:'red',pattern:[[0,210,.80,'snap'],[290,420,1.00,'surge']]},
+ disney:{family:'blue',pattern:[[0,920,.68,'bloom']]},
+ ytmusic:{family:'red',pattern:[[0,150,.72,'pulse'],[230,150,.72,'pulse'],[470,340,.92,'surge']]},
+ cable:{family:'blue',pattern:[[0,240,.78,'focus'],[320,560,.60,'echo']]},
+ appletvbox:{family:'blue',pattern:[[0,1020,.62,'bloom']]},
+ apps:{family:'blue',pattern:[[0,190,.68,'pulse'],[260,190,.75,'pulse'],[520,280,.62,'echo']]},
+ settings:{family:'blue',pattern:[[0,170,.58,'scan']]},
+ prime:{family:'blue',pattern:[[0,520,.78,'focus']]},
+ spotify:{family:'blue',pattern:[[0,180,.64,'pulse'],[270,180,.64,'pulse'],[540,430,.58,'bloom']]},
+ appletvapp:{family:'blue',pattern:[[0,880,.60,'bloom']]}
+};
+const familyVars={
+ blue:{main:'78,173,255', hot:'208,244,255', outer:'48,108,194', haze:'112,223,255'},
+ red:{main:'235,80,82', hot:'255,221,220', outer:'125,20,26', haze:'255,135,115'}
 };
 let flashTimers=[];
+function applyFamily(fam){
+ const f=familyVars[fam]||familyVars.blue;
+ eyesRoot.style.setProperty('--pulse-main',f.main);
+ eyesRoot.style.setProperty('--pulse-hot',f.hot);
+ eyesRoot.style.setProperty('--pulse-outer',f.outer);
+ eyesRoot.style.setProperty('--pulse-haze',f.haze);
+}
+function setEyeState(mode,intensity){
+ eyesRoot.dataset.mode=mode||'focus';
+ eyesRoot.style.setProperty('--pulse-strength',String(intensity*glow/100));
+ eyeNodes.forEach(e=>e.classList.add('active'));
+}
+function clearEyeState(){ eyeNodes.forEach(e=>e.classList.remove('active')); }
 function flash(id='youtube'){
  flashTimers.forEach(clearTimeout);flashTimers=[];
- eyesRoot.classList.remove('flash-on');
- eyeNodes.forEach(e=>e.classList.remove('active'));
+ clearEyeState();
  void eyesRoot.offsetWidth;
- const ef=appEffects?(effectSettings[id]||effectSettings.youtube):{color:'blue',pattern:[[0,590,.65]]};
- const rgb=ef.color==='red'?'224,52,57':'47,159,245';
- eyesRoot.style.setProperty('--pulse-color',rgb);
- for(const [delay,duration,intensity] of ef.pattern){
-  flashTimers.push(setTimeout(()=>{
-   eyesRoot.style.setProperty('--pulse-strength',String(intensity*glow/100));
-   eyeNodes.forEach(e=>e.classList.add('active'));
-  },delay));
-  flashTimers.push(setTimeout(()=>eyeNodes.forEach(e=>e.classList.remove('active')),delay+duration));
+ const ef=appEffects?(effectSettings[id]||effectSettings.youtube):{family:'blue',pattern:[[0,620,.72,'focus']]};
+ applyFamily(ef.family);
+ for(const [delay,duration,intensity,mode] of ef.pattern){
+  flashTimers.push(setTimeout(()=>{ setEyeState(mode,intensity); },delay));
+  flashTimers.push(setTimeout(()=>{ clearEyeState(); },delay+duration));
  }
 }
 function choose(i,animate=true){selected=(i+apps.length)%apps.length;buttons.forEach((b,j)=>{b.classList.toggle('selected',j===selected);b.setAttribute('aria-pressed',String(j===selected))});if(animate)flash(apps[selected][0])}
@@ -110,7 +122,7 @@ glowInput.oninput=e=>{glow=+e.target.value;document.getElementById('glowOut').te
 const fogInput=document.getElementById('fog');fogInput.value=85;document.getElementById('fogOut').textContent='85%';
 fogInput.oninput=e=>{fog=+e.target.value;document.getElementById('fogOut').textContent=fog+'%'};
 document.getElementById('idle').onchange=e=>idle=+e.target.value;
-let rainEnabled=localStorage.getItem('ohmu-rain-v022')!=='off', atmospherePreviewUntil=0;
+let rainEnabled=localStorage.getItem('ohmu-rain-v023')!=='off', atmospherePreviewUntil=0;
 const rainToggle=document.getElementById('rainToggle');rainToggle.checked=rainEnabled;
 rainToggle.onchange=e=>{rainEnabled=e.target.checked;localStorage.setItem('ohmu-rain-v022',rainEnabled?'on':'off')};
 document.getElementById('atmosphereTest').onclick=()=>{atmospherePreviewUntil=performance.now()+8000;notify('Fog + rain preview · 8 sec');closePanel()};

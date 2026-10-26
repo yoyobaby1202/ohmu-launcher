@@ -130,3 +130,52 @@
 #eyes .eye.active::before{opacity:0!important}
 #eyes.calibrating .eye.calibrate{opacity:.84!important;background:rgba(4,145,230,.35)!important;filter:none!important}
 @media(max-height:440px){#dock{height:18%;padding:2px 4px}}
+
+
+/* v0.2.3 — route B: tvOS-like wide cards + refined bioluminescent eyes */
+#dock{height:19%;bottom:2.4%;width:96%;gap:.5%;padding:7px 8px;border-radius:18px;background:linear-gradient(180deg,rgba(8,22,32,.78),rgba(4,14,23,.92));border:1px solid rgba(183,225,241,.15);box-shadow:0 14px 45px rgba(0,0,0,.40), inset 0 1px rgba(255,255,255,.05)}
+#dock .app{flex:1 1 0;min-width:0;height:100%;border-radius:14px;padding:7px 4px 6px;background:linear-gradient(180deg,rgba(26,48,63,.28),rgba(10,24,34,.18));border:1px solid rgba(159,211,228,.06);justify-content:flex-start;gap:6px}
+#dock .app.selected,#dock .app:focus-visible{transform:translateY(-4px) scale(1.03);background:linear-gradient(180deg,rgba(70,111,132,.34),rgba(19,38,51,.28));border-color:rgba(235,248,255,.88);box-shadow:0 12px 30px rgba(0,0,0,.46),0 0 16px rgba(117,194,225,.24),inset 0 1px rgba(255,255,255,.16)}
+#dock .app .symbol.app-icon{width:86%;height:58%;border-radius:13px;aspect-ratio:auto;box-shadow:0 7px 18px rgba(0,0,0,.36), inset 0 1px rgba(255,255,255,.16);background:#132636;position:relative;overflow:hidden}
+#dock .app .name{font-size:clamp(8px,.88vw,14px);font-weight:600;letter-spacing:.01em;line-height:1.15;text-align:center;max-width:88%;white-space:normal}
+#dock .app .symbol.app-icon::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.10),transparent 38%,transparent 62%,rgba(255,255,255,.02));pointer-events:none}
+#dock .app .symbol.app-icon.youtube-icon{background:linear-gradient(160deg,#f6f6f7,#d9dbde)}
+#dock .app .symbol.app-icon.netflix-icon{background:linear-gradient(160deg,#19191c,#050406)}
+#dock .app .symbol.app-icon.disney-icon{background:linear-gradient(160deg,#081b47,#1a4da9 52%,#081125)}
+#dock .app .symbol.app-icon.ytmusic-icon{background:linear-gradient(160deg,#ffffff,#ececec)}
+#dock .app .symbol.app-icon.cable-icon{background:linear-gradient(160deg,#0e5f7c,#163148)}
+#dock .app .symbol.app-icon.appletvbox-icon{background:linear-gradient(160deg,#2b2d33,#050507 72%)}
+#dock .app .symbol.app-icon.apps-icon,#dock .app .symbol.app-icon.settings-icon{background:linear-gradient(160deg,#29485a,#102132)}
+#dock .app .symbol.app-icon svg{width:100%;height:100%}
+#dock .app .symbol.app-icon.netflix-icon svg path:first-child{opacity:.95}
+#dock .app .symbol.app-icon.disney-icon svg text{font-size:14px}
+#dock .app .symbol.app-icon.ytmusic-icon svg circle[fill='white']{fill:#f8f8f8}
+#dock .app .symbol.app-icon.ytmusic-icon svg path{filter:none}
+#dock .app .symbol.app-icon.appletvbox-icon svg text,#dock .drawer-app .app-icon.appletvapp-icon svg text{font-weight:700}
+
+#eyes .eye{opacity:0!important;background:transparent!important;box-shadow:none!important;filter:none!important;mix-blend-mode:screen;transition:opacity .16s linear!important;}
+#eyes .eye::before,#eyes .eye::after{content:'';position:absolute;inset:0;border-radius:50%;opacity:0;pointer-events:none}
+#eyes .eye.active{opacity:var(--pulse-strength,.72)!important;
+background:
+ radial-gradient(ellipse at 50% 48%, rgba(var(--pulse-hot,208,244,255),.96) 0%, rgba(var(--pulse-hot,208,244,255),.84) 11%, rgba(var(--pulse-main,78,173,255),.74) 29%, rgba(var(--pulse-main,78,173,255),.34) 58%, rgba(var(--pulse-main,78,173,255),.08) 78%, transparent 94%)!important;
+box-shadow:0 0 8px rgba(var(--pulse-haze,112,223,255),.18), 0 0 16px rgba(var(--pulse-outer,48,108,194),.10)!important;
+filter:blur(.55px)!important;}
+#eyes .eye.active::before{opacity:.95;transform:scale(1.01);background:radial-gradient(ellipse at 46% 44%, rgba(var(--pulse-hot,208,244,255),.92) 0%, rgba(var(--pulse-hot,208,244,255),.58) 18%, transparent 52%)}
+#eyes .eye.active::after{opacity:.72;transform:scale(1.18);background:radial-gradient(ellipse at 50% 54%, rgba(var(--pulse-haze,112,223,255),.20) 0%, rgba(var(--pulse-haze,112,223,255),.11) 38%, transparent 76%);filter:blur(2.2px)}
+#eyes[data-mode='focus'] .eye.active{animation:eyeFocus .52s cubic-bezier(.16,.84,.26,1) both}
+#eyes[data-mode='bloom'] .eye.active{animation:eyeBloom 1.0s cubic-bezier(.17,.74,.2,1) both}
+#eyes[data-mode='surge'] .eye.active{animation:eyeSurge .72s cubic-bezier(.22,.88,.24,1) both}
+#eyes[data-mode='pulse'] .eye.active{animation:eyePulse .28s ease-out both}
+#eyes[data-mode='echo'] .eye.active{animation:eyeEcho .78s ease-out both}
+#eyes[data-mode='scan'] .eye.active{animation:eyeScan .36s ease-out both}
+@keyframes eyeFocus{0%{opacity:0;transform:scale(.93)}28%{opacity:calc(var(--pulse-strength,.72)*1.02);transform:scale(1.01)}100%{opacity:calc(var(--pulse-strength,.72)*.82);transform:scale(1)}}
+@keyframes eyeBloom{0%{opacity:0;transform:scale(.90)}18%{opacity:calc(var(--pulse-strength,.72)*.74);transform:scale(.98)}48%{opacity:calc(var(--pulse-strength,.72)*1.02);transform:scale(1.04)}100%{opacity:calc(var(--pulse-strength,.72)*.76);transform:scale(1.01)}}
+@keyframes eyeSurge{0%{opacity:0;transform:scale(.88)}22%{opacity:calc(var(--pulse-strength,.72)*1.12);transform:scale(1.05)}52%{opacity:calc(var(--pulse-strength,.72)*.94);transform:scale(1.00)}100%{opacity:calc(var(--pulse-strength,.72)*.70);transform:scale(.99)}}
+@keyframes eyePulse{0%{opacity:0;transform:scale(.95)}40%{opacity:calc(var(--pulse-strength,.72)*.96);transform:scale(1.02)}100%{opacity:calc(var(--pulse-strength,.72)*.82);transform:scale(1)}}
+@keyframes eyeEcho{0%{opacity:0;transform:scale(.94)}24%{opacity:calc(var(--pulse-strength,.72)*.88);transform:scale(1.02)}100%{opacity:calc(var(--pulse-strength,.72)*.58);transform:scale(1.06)}}
+@keyframes eyeScan{0%{opacity:0;transform:scale(.96)}35%{opacity:calc(var(--pulse-strength,.72)*.80);transform:scale(1.00)}100%{opacity:calc(var(--pulse-strength,.72)*.46);transform:scale(.99)}}
+
+.drawer-items .drawer-app{background:rgba(18,43,58,.92)}
+.drawer-items .drawer-app .app-icon{width:42px;height:30px;border-radius:8px}
+.drawer-items .drawer-app .name{font-size:13px}
+@media(max-height:440px){#dock{height:20%;padding:4px 5px}#dock .app .symbol.app-icon{height:54%}#dock .app .name{font-size:clamp(7px,1.55vh,10px)}}
